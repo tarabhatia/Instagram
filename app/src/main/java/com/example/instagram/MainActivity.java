@@ -23,7 +23,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        if (currentUser != null) {
+            // do stuff with the user
+            final Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+            startActivity(intent);
+        } else {
+            // show the signup or login screen
+            setContentView(R.layout.activity_main);
+        }
 
         // Getting username from input boxes
         usernameInput = findViewById(R.id.username_et);
@@ -34,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
         //usernameInput.setText("taarzzz");
         // passwordInput.setText("password123");
+
 
         // Login button listener
         loginBtn.setOnClickListener(new View.OnClickListener() {
