@@ -17,7 +17,7 @@ import java.util.List;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
 
-    private List<Post> mPosts;
+    private static List<Post> mPosts;
     Context context;
 
     public HomeAdapter(List<Post> posts) {
@@ -81,6 +81,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
 
         }
 
+
+
         //@Override
 //        public void onClick(View v) {
 //            int position = getAdapterPosition();
@@ -90,5 +92,16 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
 //            }
 //
 //        }
+    }
+
+    public void clear() {
+        mPosts.clear();
+        notifyDataSetChanged();
+    }
+
+    // Add a list of items -- change to type used
+    public void addAll(List<Post> list) {
+        mPosts.addAll(list);
+        notifyDataSetChanged();
     }
 }

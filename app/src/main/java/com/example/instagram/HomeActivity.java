@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -46,6 +47,9 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView rvPosts;
     ArrayList<Post> mPosts;
     HomeAdapter homeAdapter;
+    private SwipeRefreshLayout swipeContainer;
+
+
 
 
 
@@ -120,6 +124,21 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your code to refresh the list here.
+                // Make sure you call swipeContainer.setRefreshing(false)
+                // once the network request has completed successfully.
+                queryPosts();
+            }
+        });
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
 
         //descriptionInput = findViewById(R.id.description_et);
         //refreshButton = findViewById(R.id.refresh_btn);
@@ -142,6 +161,7 @@ public class HomeActivity extends AppCompatActivity {
                     case R.id.action_compose:
                         onLaunchCamera();
                     case R.id.action_profile:
+                        logout();
                     default:
                         break;
                 }
@@ -160,6 +180,12 @@ public class HomeActivity extends AppCompatActivity {
         queryPosts();
     }
 
+    private void logout() {
+        ParseUser.logOut();
+        ParseUser currentUser = ParseUser.getCurrentUser(); // this will now be null
+        setContentView(R.layout.activity_main);
+    }
+
     private void queryPosts() {
         ParseQuery<Post> postQuery = new ParseQuery<Post>(Post.class);
         postQuery.orderByDescending("createdAt");
@@ -172,6 +198,8 @@ public class HomeActivity extends AppCompatActivity {
                     e.printStackTrace();
                     return;
                 }
+
+
                 mPosts.addAll(posts);
                 homeAdapter.notifyDataSetChanged();
                 for (int i =0; i < posts.size(); i++) {
