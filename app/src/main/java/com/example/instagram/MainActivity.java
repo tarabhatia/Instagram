@@ -20,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private Button loginBtn;
     private Button signBtn;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,17 +30,16 @@ public class MainActivity extends AppCompatActivity {
             // do stuff with the user
             final Intent intent = new Intent(MainActivity.this, HomeActivity.class);
             startActivity(intent);
-        } else {
-            // show the signup or login screen
-            setContentView(R.layout.activity_main);
+            finish();
         }
+
+        setContentView(R.layout.activity_main);
 
         // Getting username from input boxes
         usernameInput = findViewById(R.id.username_et);
         passwordInput = findViewById(R.id.password_et);
         loginBtn = findViewById(R.id.login_btn);
         signBtn = findViewById(R.id.btnSign);
-
 
         //usernameInput.setText("taarzzz");
         // passwordInput.setText("password123");

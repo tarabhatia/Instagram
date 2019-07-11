@@ -1,35 +1,40 @@
 package com.example.instagram;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.instagram.model.HomeAdapter;
 import com.example.instagram.model.Post;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private EditText descriptionInput;
+    private EditText etCaption;
     private FloatingActionButton createButton;
     private Button refreshButton;
     public final String APP_TAG = "MyCustomApp";
@@ -37,10 +42,20 @@ public class HomeActivity extends AppCompatActivity {
     public String photoFileName = "photo.jpg";
     File photoFile;
     private ImageView ivPreview;
+    private BottomNavigationView bottomNavigationView;
+    private RecyclerView rvPosts;
+    ArrayList<Post> mPosts;
+    HomeAdapter homeAdapter;
 
 
 
-    public void onLaunchCamera(View view) {
+
+
+
+
+
+
+    public void onLaunchCamera() {
         // create Intent to take a picture and return control to the calling application
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Create a File reference to access to future access
@@ -83,25 +98,20 @@ public class HomeActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                // by this point we have the camera photo on disk
-                Bitmap takenImage = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
-                // RESIZE BITMAP, see section below
-                // Load the taken image into a preview
-                ImageView ivPreview = (ImageView) findViewById(R.id.ivPreview);
-                ivPreview.setImageBitmap(takenImage);
-
-                ParseFile parseFile = new ParseFile(photoFile);
-
-                Post p = new Post();
-                p.setImage(parseFile);
-                p.setUser(ParseUser.getCurrentUser());
-//                p.setDescription(etCaption.getText());
-//                p.saveInBackground();
-
+                // Go to post activity
+                Intent intent = new Intent(this, PostActivity.class);
+                intent.putExtra("picture", photoFile.getAbsolutePath());
+                startActivityForResult(intent, 1234);
             } else { // Result was a failure
                 Toast.makeText(this, "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
             }
         }
+
+        if(requestCode == 1234){
+            mPosts.clear();
+            queryPosts();
+        }
+        // add else if for 1234
     }
 
 
@@ -112,22 +122,30 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         //descriptionInput = findViewById(R.id.description_et);
-        createButton = findViewById(R.id.btnCreate);
         //refreshButton = findViewById(R.id.refresh_btn);
+        mPosts = new ArrayList<>();
+        homeAdapter = new HomeAdapter(mPosts);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        rvPosts = findViewById(R.id.rvPosts);
+
+        rvPosts.setLayoutManager(new LinearLayoutManager(this));
+        rvPosts.setAdapter(homeAdapter);
 
 
-        createButton.setOnClickListener(new View.OnClickListener() {
-
+        // listener for bottom navigation
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-
-                onLaunchCamera(v);
-
-                //final File file = new File(imagePath);
-               // final ParseFile parseFile = new ParseFile(file);
-
-               // createPost(description, parseFile, user);
-
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_home:
+                        break;
+                    case R.id.action_compose:
+                        onLaunchCamera();
+                    case R.id.action_profile:
+                    default:
+                        break;
+                }
+                return true;
             }
         });
 
@@ -138,6 +156,29 @@ public class HomeActivity extends AppCompatActivity {
 //                loadTopPosts();
 //            }
 //        });
+
+        queryPosts();
+    }
+
+    private void queryPosts() {
+        ParseQuery<Post> postQuery = new ParseQuery<Post>(Post.class);
+        postQuery.orderByDescending("createdAt");
+        postQuery.include(Post.KEY_USER);
+        postQuery.findInBackground(new FindCallback<Post>() {
+            @Override
+            public void done(List<Post> posts, ParseException e) {
+                if (e != null) {
+                    Log.e("MainActivity", "Error");
+                    e.printStackTrace();
+                    return;
+                }
+                mPosts.addAll(posts);
+                homeAdapter.notifyDataSetChanged();
+                for (int i =0; i < posts.size(); i++) {
+                    Log.d("MainActivity", "Post: " + posts.get(i).getDescription() + "username: " + posts.get(i).getUser().getUsername());
+                }
+            }
+        });
     }
 
 
