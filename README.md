@@ -60,8 +60,7 @@ List an 3rd party libraries, icons, graphics, or other assets you used in your a
 
 ## Notes
 
-Describe any challenges encountered while building the app.
-
+This project was super fun! Because of the lack of code walkthroughs, it really pushed me to understand the concepts more clearly. 
 ## License
 
     Copyright [2019] [Tara Bhatia]
